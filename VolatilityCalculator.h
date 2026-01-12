@@ -11,18 +11,7 @@
 #include <numeric>
 #include <iomanip>
 
-/**
- * @brief Consumer Thread 3: Volatility Indicator
- * 
- * This class represents Thread 4 (Consumer/Analytic) in the multithreaded architecture.
- * It calculates the volatility (standard deviation of returns) for each stock symbol.
- * 
- * Threading Model:
- * - Runs in dedicated thread
- * - Consumer in Producer-Consumer pattern
- * - Demonstrates concurrent analytical processing
- * - Independent from other consumer threads (no inter-consumer synchronization needed)
- */
+// Computes volatility for each symbol in the background.
 class VolatilityCalculator {
 private:
     SharedBuffer& buffer_;                  // Reference to shared buffer
@@ -34,13 +23,6 @@ private:
     size_t window_size_;                    // Volatility window size
 
 public:
-    /**
-     * @brief Constructor
-     * @param buffer Shared buffer for reading price history
-     * @param perf_monitor Performance monitoring system
-     * @param window_size Number of periods for volatility calculation
-     * @param calculation_interval_ms Milliseconds between calculations
-     */
     VolatilityCalculator(SharedBuffer& buffer,
                          PerformanceMonitor& perf_monitor,
                          size_t window_size = 20,
@@ -48,9 +30,6 @@ public:
         : buffer_(buffer), perf_monitor_(perf_monitor), running_(false),
           calculation_interval_ms_(calculation_interval_ms), window_size_(window_size) {}
     
-    /**
-     * @brief Start the volatility calculator thread
-     */
     void start() {
         bool expected = false;
         if (running_.compare_exchange_strong(expected, true)) {
@@ -60,9 +39,6 @@ public:
         }
     }
     
-    /**
-     * @brief Stop the volatility calculator thread
-     */
     void stop() {
         if (running_.exchange(false)) {
             if (thread_.joinable()) {
@@ -72,34 +48,11 @@ public:
         }
     }
     
-    /**
-     * @brief Destructor
-     */
     ~VolatilityCalculator() {
         stop();
     }
 
 private:
-    /**
-     * @brief Main calculation loop (runs in separate thread)
-     * 
-     * Consumer responsibilities:
-     * 1. Wait for new data (condition variable)
-     * 2. Read price history from shared buffer (mutex protection)
-     * 3. Calculate volatility (standard deviation of returns)
-     * 4. Record performance metrics
-     * 5. Log results
-     * 
-     * Volatility Formula:
-     * - Calculate returns: (P[i] - P[i-1]) / P[i-1]
-     * - Calculate standard deviation of returns
-     * - Annualize: volatility * sqrt(252 trading days)
-     * 
-     * Synchronization:
-     * - Uses SharedBuffer methods with internal mutex protection
-     * - No deadlock risk: single lock acquisition per operation
-     * - Thread-safe via encapsulated synchronization
-     */
     void run() {
         std::cout << "[VolatilityCalculator] Volatility calculation loop starting...\n";
         
@@ -184,9 +137,9 @@ private:
             auto calc_time = std::chrono::duration_cast<std::chrono::microseconds>(
                 calc_end - calc_start).count();
             
-            // Log calculation performance
+            // Log calculation performance (display in microseconds using ASCII)
             if (calculation_count % 15 == 0) {
-                std::cout << " | Calc time: " << calc_time << " μs\n";
+                std::cout << " | Calc time: " << calc_time << " us\n";
             }
             
             // Sleep to control calculation rate

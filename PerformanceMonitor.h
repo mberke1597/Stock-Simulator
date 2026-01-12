@@ -12,20 +12,7 @@
 #include <numeric>
 #include <algorithm>
 
-/**
- * @brief Performance monitoring and metrics collection system
- * 
- * This class tracks timing information throughout the system to measure:
- * - Latency between price generation and indicator calculation
- * - Thread execution times
- * - System throughput
- * 
- * Thread-Safety:
- * - Uses std::mutex to protect shared metrics data
- * - Can be called from multiple threads concurrently
- * 
- * Purpose: Provides data for performance analysis report
- */
+// Collects simple latency and throughput stats for the simulator.
 class PerformanceMonitor {
 private:
     // Latency measurements per symbol and operation
@@ -49,22 +36,10 @@ private:
     size_t total_calculations_;
 
 public:
-    /**
-     * @brief Constructor
-     */
     PerformanceMonitor() 
         : start_time_(std::chrono::high_resolution_clock::now()),
           total_generations_(0), total_calculations_(0) {}
     
-    /**
-     * @brief Record a price generation event
-     * 
-     * Called by producer thread to record when a price was generated.
-     * Stores timestamp for later latency calculation.
-     * 
-     * @param symbol Stock symbol
-     * @param timestamp Generation timestamp
-     */
     void recordGeneration(const std::string& symbol, 
                          const std::chrono::high_resolution_clock::time_point& timestamp) {
         std::unique_lock<std::mutex> lock(mutex_);
@@ -72,17 +47,6 @@ public:
         ++total_generations_;
     }
     
-    /**
-     * @brief Record an indicator processing event
-     * 
-     * Called by consumer threads to record when an indicator was calculated.
-     * Calculates latency from generation to processing.
-     * 
-     * @param symbol Stock symbol
-     * @param operation Operation name ("SMA", "Volatility", etc.)
-     * @param generation_time When the price was generated
-     * @param processing_time When the calculation completed
-     */
     void recordProcessing(const std::string& symbol,
                          const std::string& operation,
                          const std::chrono::high_resolution_clock::time_point& generation_time,
@@ -102,16 +66,6 @@ public:
         ++total_calculations_;
     }
     
-    /**
-     * @brief Get statistics for a specific symbol and operation
-     * 
-     * @param symbol Stock symbol
-     * @param operation Operation name
-     * @param min_latency Output: minimum latency
-     * @param max_latency Output: maximum latency
-     * @param avg_latency Output: average latency
-     * @param sample_count Output: number of samples
-     */
     void getLatencyStats(const std::string& symbol,
                         const std::string& operation,
                         double& min_latency,
@@ -148,15 +102,6 @@ public:
         sample_count = latencies.size();
     }
     
-    /**
-     * @brief Print comprehensive performance report
-     * 
-     * Displays:
-     * - System uptime
-     * - Total operations
-     * - Latency statistics per symbol and operation
-     * - Throughput metrics
-     */
     void printReport() {
         std::unique_lock<std::mutex> lock(mutex_);
         
@@ -185,9 +130,9 @@ public:
         std::cout << std::setw(10) << "Symbol" 
                   << std::setw(15) << "Operation" 
                   << std::setw(12) << "Samples"
-                  << std::setw(12) << "Min (μs)"
-                  << std::setw(12) << "Max (μs)"
-                  << std::setw(12) << "Avg (μs)" << "\n";
+              << std::setw(12) << "Min (us)"
+              << std::setw(12) << "Max (us)"
+              << std::setw(12) << "Avg (us)" << "\n";
         std::cout << std::string(73, '-') << "\n";
         
         for (const auto& symbol_pair : latency_records_) {
@@ -228,9 +173,6 @@ public:
         std::cout << "\n====================================================\n\n";
     }
     
-    /**
-     * @brief Get system statistics
-     */
     void getSystemStats(size_t& generations, size_t& calculations, double& uptime_seconds) {
         std::unique_lock<std::mutex> lock(mutex_);
         

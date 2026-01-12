@@ -10,18 +10,7 @@
 #include <vector>
 #include <iostream>
 
-/**
- * @brief Producer Thread: Generates random stock price fluctuations
- * 
- * This class represents Thread 1 (Producer) in the multithreaded architecture.
- * It generates random price updates for multiple stock symbols at regular intervals
- * and pushes them to the shared buffer.
- * 
- * Threading Model:
- * - Runs in dedicated thread (std::thread)
- * - Uses atomic flag for thread-safe shutdown signaling
- * - Generates data independently from consumers
- */
+// Feeds the shared buffer with random price updates.
 class PriceGenerator {
 private:
     SharedBuffer& buffer_;                      // Reference to shared buffer (synchronization point)
@@ -40,13 +29,6 @@ private:
     std::normal_distribution<> price_change_dist_;  // Normal distribution for realistic price changes
 
 public:
-    /**
-     * @brief Constructor
-     * @param buffer Shared buffer for inter-thread communication
-     * @param perf_monitor Performance monitoring system
-     * @param symbols List of stock symbols to simulate
-     * @param update_interval_ms Milliseconds between price updates
-     */
     PriceGenerator(SharedBuffer& buffer, 
                    PerformanceMonitor& perf_monitor,
                    const std::vector<std::string>& symbols = {"AAPL", "GOOGL", "MSFT", "AMZN", "BTC"},
@@ -63,12 +45,6 @@ public:
         }
     }
     
-    /**
-     * @brief Start the producer thread
-     * 
-     * Launches a new thread that runs the generation loop.
-     * Thread-safe: Uses atomic flag to prevent multiple starts.
-     */
     void start() {
         bool expected = false;
         if (running_.compare_exchange_strong(expected, true)) {
@@ -78,13 +54,6 @@ public:
         }
     }
     
-    /**
-     * @brief Stop the producer thread and wait for completion
-     * 
-     * Thread-safe shutdown:
-     * 1. Sets atomic flag to signal thread to exit
-     * 2. Joins thread to ensure clean termination
-     */
     void stop() {
         if (running_.exchange(false)) {
             if (thread_.joinable()) {
@@ -94,28 +63,11 @@ public:
         }
     }
     
-    /**
-     * @brief Destructor ensures thread is properly stopped
-     */
     ~PriceGenerator() {
         stop();
     }
 
 private:
-    /**
-     * @brief Main producer loop (runs in separate thread)
-     * 
-     * Producer responsibilities:
-     * 1. Generate random price fluctuations
-     * 2. Create PriceData objects with high-resolution timestamps
-     * 3. Push data to shared buffer (synchronization via mutex)
-     * 4. Record performance metrics
-     * 5. Sleep to control update rate
-     * 
-     * Synchronization:
-     * - Uses SharedBuffer::push() which internally acquires mutex
-     * - No explicit locking needed here (encapsulated in SharedBuffer)
-     */
     void run() {
         std::cout << "[PriceGenerator] Producer loop starting...\n";
         
@@ -155,7 +107,7 @@ private:
             // Log every 50 iterations to avoid cluttering console
             if (iteration % 50 == 0) {
                 std::cout << "[PriceGenerator] Iteration " << iteration 
-                          << " - Generation time: " << generation_time << " μs\n";
+                          << " - Generation time: " << generation_time << " us\n";
             }
             
             // Sleep to control update rate

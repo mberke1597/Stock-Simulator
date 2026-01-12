@@ -10,18 +10,7 @@
 #include <numeric>
 #include <iomanip>
 
-/**
- * @brief Consumer Thread 2: Simple Moving Average (SMA) Indicator
- * 
- * This class represents Thread 3 (Consumer/Analytic) in the multithreaded architecture.
- * It calculates the Simple Moving Average for each stock symbol.
- * 
- * Threading Model:
- * - Runs in dedicated thread
- * - Consumer in Producer-Consumer pattern
- * - Uses condition variable for efficient synchronization
- * - Demonstrates analytical processing on shared data
- */
+// Background thread that keeps a rolling SMA per symbol.
 class SMACalculator {
 private:
     SharedBuffer& buffer_;                  // Reference to shared buffer
@@ -33,13 +22,6 @@ private:
     size_t window_size_;                    // SMA window size (e.g., 20 periods)
 
 public:
-    /**
-     * @brief Constructor
-     * @param buffer Shared buffer for reading price history
-     * @param perf_monitor Performance monitoring system
-     * @param window_size Number of periods for SMA calculation
-     * @param calculation_interval_ms Milliseconds between calculations
-     */
     SMACalculator(SharedBuffer& buffer, 
                   PerformanceMonitor& perf_monitor,
                   size_t window_size = 20,
@@ -47,9 +29,6 @@ public:
         : buffer_(buffer), perf_monitor_(perf_monitor), running_(false),
           calculation_interval_ms_(calculation_interval_ms), window_size_(window_size) {}
     
-    /**
-     * @brief Start the SMA calculator thread
-     */
     void start() {
         bool expected = false;
         if (running_.compare_exchange_strong(expected, true)) {
@@ -59,9 +38,6 @@ public:
         }
     }
     
-    /**
-     * @brief Stop the SMA calculator thread
-     */
     void stop() {
         if (running_.exchange(false)) {
             if (thread_.joinable()) {
@@ -71,29 +47,11 @@ public:
         }
     }
     
-    /**
-     * @brief Destructor
-     */
     ~SMACalculator() {
         stop();
     }
 
 private:
-    /**
-     * @brief Main calculation loop (runs in separate thread)
-     * 
-     * Consumer responsibilities:
-     * 1. Wait for new data (condition variable)
-     * 2. Read price history from shared buffer (mutex protection)
-     * 3. Calculate Simple Moving Average
-     * 4. Record performance metrics (latency measurement)
-     * 5. Log results
-     * 
-     * Synchronization:
-     * - Uses SharedBuffer::waitForData() for efficient waiting
-     * - Uses SharedBuffer::getHistory() with mutex protection
-     * - No race conditions: all shared access is synchronized
-     */
     void run() {
         std::cout << "[SMACalculator] SMA calculation loop starting...\n";
         
@@ -155,9 +113,9 @@ private:
             auto calc_time = std::chrono::duration_cast<std::chrono::microseconds>(
                 calc_end - calc_start).count();
             
-            // Log calculation performance
+            // Log calculation performance (display in microseconds using ASCII)
             if (calculation_count % 20 == 0) {
-                std::cout << " | Calc time: " << calc_time << " μs\n";
+                std::cout << " | Calc time: " << calc_time << " us\n";
             }
             
             // Sleep to control calculation rate

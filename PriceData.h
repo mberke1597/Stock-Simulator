@@ -4,12 +4,7 @@
 #include <string>
 #include <chrono>
 
-/**
- * @brief Core data structure representing a stock price tick
- * 
- * This structure holds all information for a single price update,
- * including high-resolution timestamp for performance analysis.
- */
+// Represents a single price update with timestamp.
 struct PriceData {
     std::string symbol;                                          // Stock symbol (e.g., "AAPL", "BTC")
     double price;                                                // Current price
@@ -23,12 +18,7 @@ struct PriceData {
           timestamp(std::chrono::high_resolution_clock::now()) {}
 };
 
-/**
- * @brief Performance metrics for a single operation
- * 
- * Tracks timing information to analyze system performance and
- * identify bottlenecks in the producer-consumer pipeline.
- */
+// Captures basic timing info for one operation.
 struct PerformanceMetrics {
     std::chrono::high_resolution_clock::time_point generation_time;  // When price was generated
     std::chrono::high_resolution_clock::time_point processing_time;  // When indicator was calculated

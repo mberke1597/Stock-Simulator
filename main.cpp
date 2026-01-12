@@ -1,24 +1,4 @@
-/**
- * Real-Time Stock Price Simulator
- * 
- * A multithreaded C++ application demonstrating core Operating Systems concepts:
- * - Multithreading (std::thread)
- * - Synchronization (std::mutex, std::condition_variable)
- * - Producer-Consumer pattern
- * - Thread-safe shared memory
- * - Deadlock prevention
- * - Performance measurement
- * 
- * Architecture:
- * - Thread 1 (Producer): Generates random price fluctuations
- * - Thread 2 (Consumer): Displays real-time prices
- * - Thread 3 (Consumer): Calculates Simple Moving Average
- * - Thread 4 (Consumer): Calculates Volatility
- * 
- * Author: Academic Project for OS Concepts
- * Date: December 2025
- * Language: C++17/20
- */
+// Entry point for the real-time stock price simulator.
 
 #include "SharedBuffer.h"
 #include "PriceGenerator.h"
@@ -38,11 +18,6 @@
 // Global flag for graceful shutdown on Ctrl+C
 std::atomic<bool> g_shutdown_requested(false);
 
-/**
- * @brief Signal handler for SIGINT (Ctrl+C)
- * 
- * Allows graceful shutdown of all threads when user interrupts.
- */
 void signalHandler(int signal) {
     if (signal == SIGINT) {
         std::cout << "\n\n[Main] Shutdown signal received (Ctrl+C)...\n";
@@ -68,17 +43,17 @@ int main(int argc, char* argv[]) {
     std::cout << "    REAL-TIME STOCK PRICE SIMULATOR (Multithreaded)    \n";
     std::cout << "========================================================\n";
     std::cout << "\nOperating Systems Concepts Demonstrated:\n";
-    std::cout << "  ✓ Multithreading (std::thread)\n";
-    std::cout << "  ✓ Mutex Synchronization (std::mutex)\n";
-    std::cout << "  ✓ Condition Variables (std::condition_variable)\n";
-    std::cout << "  ✓ Producer-Consumer Pattern\n";
-    std::cout << "  ✓ Thread-Safe Shared Memory (Circular Buffer)\n";
-    std::cout << "  ✓ Deadlock-Free Design\n";
-    std::cout << "  ✓ High-Resolution Performance Measurement\n";
+    std::cout << "  - Multithreading (std::thread)\n";
+    std::cout << "  - Mutex Synchronization (std::mutex)\n";
+    std::cout << "  - Condition Variables (std::condition_variable)\n";
+    std::cout << "  - Producer-Consumer Pattern\n";
+    std::cout << "  - Thread-Safe Shared Memory (Circular Buffer)\n";
+    std::cout << "  - Deadlock-Free Design\n";
+    std::cout << "  - High-Resolution Performance Measurement\n";
     std::cout << "\n========================================================\n\n";
     
     // Parse command-line arguments (optional: runtime duration)
-    int runtime_seconds = 30;  // Default: 30 seconds
+    int runtime_seconds = 45;  // Default: 45 seconds
     if (argc > 1) {
         try {
             runtime_seconds = std::stoi(argv[1]);

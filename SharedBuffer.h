@@ -8,19 +8,7 @@
 #include <map>
 #include <deque>
 
-/**
- * @brief Thread-safe circular buffer for price data
- * 
- * This class implements a thread-safe shared memory structure using:
- * - std::mutex for mutual exclusion (prevents race conditions)
- * - std::condition_variable for producer-consumer synchronization
- * - Circular buffer pattern for efficient memory usage
- * 
- * Design prevents deadlocks by:
- * 1. Consistent lock ordering (single mutex)
- * 2. Bounded wait times (notify_all to wake all waiting threads)
- * 3. No nested locks
- */
+// Simple thread-safe buffer that stores recent prices per symbol.
 class SharedBuffer {
 private:
     // Map of symbol -> deque of price history (circular buffer per symbol)
@@ -41,10 +29,6 @@ private:
     size_t total_reads_;
 
 public:
-    /**
-     * @brief Constructor
-     * @param max_size Maximum number of price ticks to store per symbol
-     */
     explicit SharedBuffer(size_t max_size = 100) 
         : max_history_size_(max_size), shutdown_(false), 
           total_writes_(0), total_reads_(0) {}
